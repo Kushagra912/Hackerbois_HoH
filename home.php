@@ -1,35 +1,108 @@
-<link rel="stylesheet" href="admin/assets/wysiwyg/css/froala_editor.css">
-  <link rel="stylesheet" href="admin/assets/wysiwyg/css/froala_style.css">
-<?php 
-include 'admin/db_connect.php'; 
-?>
+<?php include 'db_connect.php' ?>
 <style>
-    #cat-list li{
-        cursor: pointer;
-    }
-       #cat-list li:hover {
-        color: white;
-        background: #007bff8f;
-    }
-    .prod-item p{
-        margin: unset;
-    }
-    .bid-tag {
+   span.float-right.summary_icon {
+    font-size: 3rem;
     position: absolute;
-    right: .5em;
+    right: 1rem;
+    top: 0;
 }
+.imgs{
+		margin: .5em;
+		max-width: calc(100%);
+		max-height: calc(100%);
+	}
+	.imgs img{
+		max-width: calc(100%);
+		max-height: calc(100%);
+		cursor: pointer;
+	}
+	#imagesCarousel,#imagesCarousel .carousel-inner,#imagesCarousel .carousel-item{
+		height: 60vh !important;background: black;
+	}
+	#imagesCarousel .carousel-item.active{
+		display: flex !important;
+	}
+	#imagesCarousel .carousel-item-next{
+		display: flex !important;
+	}
+	#imagesCarousel .carousel-item img{
+		margin: auto;
+	}
+	#imagesCarousel img{
+		width: auto!important;
+		height: auto!important;
+		max-height: calc(100%)!important;
+		max-width: calc(100%)!important;
+	}
 </style>
-<?php 
-$cid = isset($_GET['category_id']) ? $_GET['category_id'] : 0;
-?>
-<div class="container">
-    <div class="col-lg-12">
-      <div class="fr-wrapper">
-          <?php echo html_entity_decode($_SESSION['system']['about_content']) ?>
-      </div>
+
+<div class="containe-fluid">
+	<div class="row mt-3 ml-3 mr-3">
+        <div class="col-lg-12">
+            <div class="card">
+                <div class="card-body">
+                    <?php echo "Welcome back ". $_SESSION['login_name']."!"  ?>
+                    <hr>
+                </div>
+            </div>      			
+        </div>
     </div>
 </div>
-       
 <script>
-    
+	$('#manage-records').submit(function(e){
+        e.preventDefault()
+        start_load()
+        $.ajax({
+            url:'ajax.php?action=save_track',
+            data: new FormData($(this)[0]),
+            cache: false,
+            contentType: false,
+            processData: false,
+            method: 'POST',
+            type: 'POST',
+            success:function(resp){
+                resp=JSON.parse(resp)
+                if(resp.status==1){
+                    alert_toast("Data successfully saved",'success')
+                    setTimeout(function(){
+                        location.reload()
+                    },800)
+
+                }
+                
+            }
+        })
+    })
+    $('#tracking_id').on('keypress',function(e){
+        if(e.which == 13){
+            get_person()
+        }
+    })
+    $('#check').on('click',function(e){
+            get_person()
+    })
+    function get_person(){
+            start_load()
+        $.ajax({
+                url:'ajax.php?action=get_pdetails',
+                method:"POST",
+                data:{tracking_id : $('#tracking_id').val()},
+                success:function(resp){
+                    if(resp){
+                        resp = JSON.parse(resp)
+                        if(resp.status == 1){
+                            $('#name').html(resp.name)
+                            $('#address').html(resp.address)
+                            $('[name="person_id"]').val(resp.id)
+                            $('#details').show()
+                            end_load()
+
+                        }else if(resp.status == 2){
+                            alert_toast("Unknow tracking id.",'danger');
+                            end_load();
+                        }
+                    }
+                }
+            })
+    }
 </script>
